@@ -3,13 +3,19 @@ import replace from 'rollup-plugin-replace';
 import commonjs from 'rollup-plugin-commonjs';
 import svelte from 'rollup-plugin-svelte';
 import babel from 'rollup-plugin-babel';
+import json from 'rollup-plugin-json';
 import { terser } from 'rollup-plugin-terser';
 import config from 'sapper/config/rollup.js';
+// import { postcss } from 'minna-ui';
 import pkg from './package.json';
 
 const mode = process.env.NODE_ENV;
 const dev = mode === 'development';
 const legacy = !!process.env.SAPPER_LEGACY_BUILD;
+
+// const postcssOpts = {
+// 	include: ['src/css/**/*.css'],
+//   };
 
 const onwarn = (warning, onwarn) => (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.includes('/@sapper/')) || onwarn(warning);
 
@@ -22,6 +28,7 @@ export default {
 				'process.browser': true,
 				'process.env.NODE_ENV': JSON.stringify(mode)
 			}),
+			// postcss(postcssOpts),
 			svelte({
 				dev,
 				hydratable: true,
@@ -47,6 +54,15 @@ export default {
 				]
 			}),
 
+			json({
+				include: 'node_modules/**',
+				exclude: [ 'node_modules/foo/**', 'node_modules/bar/**' ],
+				preferConst: true, // Default: false
+				indent: '  ',
+				compact: true, // Default: false
+				namedExports: true // Default: true
+			}),
+
 			!dev && terser({
 				module: true
 			})
@@ -66,6 +82,14 @@ export default {
 			svelte({
 				generate: 'ssr',
 				dev
+			}),
+			json({
+				include: 'node_modules/**',
+				exclude: [ 'node_modules/foo/**', 'node_modules/bar/**' ],
+				preferConst: true, // Default: false
+				indent: '  ',
+				compact: true, // Default: false
+				namedExports: true // Default: true
 			}),
 			resolve(),
 			commonjs()

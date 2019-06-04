@@ -5,17 +5,19 @@
 </script>
 
 <style>
+	@font-face {
+	font-family: 'VT323';
+	src: url('static/VT323-Regular.ttff') format('truetype');
+	}
+
 	main {
 		position: relative;
-		max-width: 56em;
-		/* background-color: white; */
+		background-color: #2A333E;
 		padding: 2em;
-		margin: 0 auto;
-		box-sizing: border-box;
+		margin: auto;
+		font-family: 'VT323';
 	}
 </style>
-
-<!-- <Nav {segment}/> -->
 
 <main>
 	<slot></slot>

@@ -1,44 +1,72 @@
 <style>
-	h1, figure, p {
-		text-align: center;
-		margin: 0 auto;
-	}
 
-	h1 {
-		font-size: 2.8em;
+	.actions {
+		font-size: 5em;
 		text-transform: uppercase;
-		font-weight: 700;
-		margin: 0 0 0.5em 0;
+		font-weight: 350;
+		margin: auto;
+		text-align: center;
+		max-width: 3em;
+		position: relative;
+		margin-top: 30%;
 	}
 
-	p {
-		margin: 1em auto;
+	.wallet-status {
+		text-align: center;
+		font-size: 5em;
+		margin-top: 30%;
 	}
 
-	@media (min-width: 480px) {
-		h1 {
-			font-size: 4em;
-		}
+	h3 {
+		text-align: center;
+		margin: auto;
+		font-size: 1.8em;
+		font-weight: 250;
 	}
+
 </style>
+
+
+<script>
+	import { CURRENCY_SYBMOL, wallet } from '../stores/wallet.js';
+
+	function changeStore(variable, newVal){
+		let x, obj;
+		const unsubscribe = wallet.subscribe(walletObj => {
+			walletObj[variable.valueOf()] = newVal
+		});
+
+		// wallet.set(walletObj)
+	}
+	
+	changeStore('qr', 'thisblahblah')
+
+	console.log('wallet', {$wallet});
+
+	// wallet.set(newObj)
+	
+</script>
 
 <svelte:head>
 	<title>FLEXBUXX</title>
 </svelte:head>
 
-<h1>Great success!</h1>
-
-<section class="flex flex-column justify-between pa4 pt5">
-	<div class="wallet-status">
-	<div class="description">
-	The Ceremonious Flex Dapps© NYC Blockchain Week Debreif Voting Experience
+<section>
+	<div class="wallet-title">
+		<h3>
+			The Ceremonious Flex Dapps© NYC Blockchain Week Debreif Voting Experience
+		</h3>
+		<div class="wallet-status">
+			<!-- =${state.CURRENCY_SYMBOL}${state.wallet.tokenBalance.toLocaleString() ||
+			0}= -->
+			={$CURRENCY_SYBMOL}=
+		</div>
 	</div>
-	<div class="f-subheadline">
-		<!-- =${state.CURRENCY_SYMBOL}${state.wallet.tokenBalance.toLocaleString() ||
-		0}= -->
+	
+	<div class="actions">
+		<a href="/get">GET</a>
+		<a href="/send">SEND</a>
+		<a href="/dapps">VOTE</a>
 	</div>
-	</div>
-	<div class="actions flex flex-column tc">
-	<a href="/dapps">VOTE</a>
-	</div>
+	
 </section>
