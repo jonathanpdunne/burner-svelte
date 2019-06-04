@@ -1,8 +1,10 @@
 import { writable, readable } from 'svelte/store';
 import { ethers } from 'ethers';
 
+import { provider } from './provider';
+
 import { abi } from '../../contracts/ERC223TOKEN';
-// import { provider } from './provider';
+
 
 /**
  * This is the main "state store" of the application. It attempts to contain
@@ -57,33 +59,68 @@ export function changeStore(variable, newVal){
     });
 }
 
+export function subscribeToWallet(store, variable){
+  let objectTree;
+  if (variable){
+    objectTree = variable.split('.');
+  }
+
+  // console.log('tree', objectTree)
+
+  // console.log('val', store.burner.signingKey.address);
+
+  // if (objectTree.length === 1) {
+  //   x=store[objectTree[0].valueOf()]
+  // }
+  // else if (objectTree.length > 1) {
+
+  //   const first = objectTree.shift()
+  //   console.log('shift', first)
+
+  //   x=store[first].valueOf()
+
+  //   subscribeToWallet(x, objectTree)
+  // }
+  // else {
+  //   x = store;
+  // }
+
+  // return x;
+
+  let x = store;
+
+  objectTree.forEach(i => {
+    x=x[i.valueOf()]
+  })
+
+  return x; 
+}
 
 // -------------------------
 
 
 export async function walletStore() {
-    // state.wallet = Object.assign({}, DEFAULT_STATE)
-
-    // let wallet = state.wallet // convenience
     
+    // creates a wallet if there is not already one in localstorage    
+    let providerStore, walletStore
+    const unsubscribeProvider = provider.subscribe(value => {
+      // providerStore = getWallet(val)
+      providerStore = value
+    })
+
+    const unsubscribeWallet = wallet.subscribe(value => {
+      walletStore = value;
+    })
+
+    changeStore('burner', getWallet(providerStore))
     
-    // creates a wallet if there is not already one in localstorage
-    
-    getWallet(provider);
-
-    changeStore(burner, getWallet(provider))
-
-    // wallet.burner = getWallet(provider)
-
-
-
-
-
-    // wallet.address = wallet.burner.signingKey.address // for convenience
+    console.log('blah', subscribeToWallet(walletStore, 'burner.signingKey.address'))
   
-    // // this is where you would stick some code that filled the user's wallet with
-    // // xDAI or whatever, if you were going to do it that way
-    // // getSomeGas()
+    changeStore('address', subscribeToWallet(walletStore, 'burner.signingKey.address'))
+  
+    // this is where you would stick some code that filled the user's wallet with
+    // xDAI or whatever, if you were going to do it that way
+    // getSomeGas()
   
     // // set this such that other parts of our application can refresh the wallet UI
     // wallet.refresh = () => {
@@ -92,13 +129,13 @@ export async function walletStore() {
     //   }
     // }
   
-    // // grab a contract instance attached to our burner wallet
-    // wallet.tokenContract = getTokenContract(
-    //   state.TOKEN_ADDRESS,
-    //   abi,
-    //   state.provider,
-    //   wallet.burner
-    // )
+    // grab a contract instance attached to our burner wallet
+    wallet.tokenContract = getTokenContract(
+      state.TOKEN_ADDRESS,
+      abi,
+      state.provider,
+      wallet.burner
+    )
   
     // // set up an event listener and notifications for the transfer function
     // setupTransferNotifications(wallet, state)
@@ -235,11 +272,12 @@ export async function walletStore() {
   
     // gets the burner wallet from localstorage or else creates a new one
     function getWallet(provider) {
-      console.log('here')
       let w = localStorage.getItem('wallet')
       if (w) {
         w = new ethers.Wallet(JSON.parse(w).signingKey.privateKey, provider)
+        // console.log('w', w)
       } else {
+        // console.log('here', provider)
         w = ethers.Wallet.createRandom()
         localStorage.setItem('wallet', JSON.stringify(w))
         w = w.connect(provider)

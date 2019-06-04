@@ -28,8 +28,13 @@
 
 
 <script>
-	import { CURRENCY_SYBMOL, wallet, changeStore } from '../stores/wallet.js';
+	import { CURRENCY_SYBMOL, wallet, changeStore, walletStore } from '../stores/wallet.js';
+
+
+	walletStore()
 	
+	console.log('wallet', {$wallet})
+
 	wallet.subscribe(value => {
 		console.log('burner', value.burner)
 	})
