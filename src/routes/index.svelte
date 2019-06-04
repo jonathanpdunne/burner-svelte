@@ -28,22 +28,11 @@
 
 
 <script>
-	import { CURRENCY_SYBMOL, wallet } from '../stores/wallet.js';
-
-	function changeStore(variable, newVal){
-		let x, obj;
-		const unsubscribe = wallet.subscribe(walletObj => {
-			walletObj[variable.valueOf()] = newVal
-		});
-
-		// wallet.set(walletObj)
-	}
+	import { CURRENCY_SYBMOL, wallet, changeStore } from '../stores/wallet.js';
 	
-	changeStore('qr', 'thisblahblah')
-
-	console.log('wallet', {$wallet});
-
-	// wallet.set(newObj)
+	wallet.subscribe(value => {
+		console.log('burner', value.burner)
+	})
 	
 </script>
 
