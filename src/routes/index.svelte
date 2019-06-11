@@ -28,16 +28,15 @@
 
 
 <script>
-	import { CURRENCY_SYBMOL, wallet, changeStore, walletStore } from '../stores/wallet.js';
-
-
-	walletStore()
+	import { CURRENCY_SYBMOL, wallet, changeStore, walletInit } from '../stores/wallet.js';
 	
-	console.log('wallet', {$wallet})
-
+	// walletInit()
+	let walletStore;
 	wallet.subscribe(value => {
-		console.log('burner', value.burner)
+		walletStore = value
 	})
+
+	// console.log('wallet', {$wallet})
 	
 </script>
 
@@ -51,16 +50,14 @@
 			The Ceremonious Flex Dapps© NYC Blockchain Week Debreif Voting Experience
 		</h3>
 		<div class="wallet-status">
-			<!-- =${state.CURRENCY_SYMBOL}${state.wallet.tokenBalance.toLocaleString() ||
-			0}= -->
-			={$CURRENCY_SYBMOL}=
+			={$CURRENCY_SYBMOL}{walletStore.tokenBalance.toLocaleString()}=
 		</div>
 	</div>
 	
 	<div class="actions">
 		<a href="/get">GET</a>
 		<a href="/send">SEND</a>
-		<a href="/dapps">VOTE</a>
+		<a href="/dapps">DAPPS</a>
 	</div>
 	
 </section>

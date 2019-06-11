@@ -11,9 +11,11 @@
 	}
 
 	main {
-		position: relative;
+		position: fixed;
+		top: 0%;
+		left: 0%;
+		width: 100%;
 		background-color: #2A333E;
-		padding: 2em;
 		margin: auto;
 		font-family: 'VT323';
 	}

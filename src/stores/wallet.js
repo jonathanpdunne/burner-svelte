@@ -1,4 +1,4 @@
-import { writable, readable } from 'svelte/store';
+import { writable, readable } from 'svelte/store.js';
 import { ethers } from 'ethers';
 
 import { provider } from './provider';
@@ -22,36 +22,39 @@ import { abi } from '../../contracts/ERC223TOKEN';
 // constant stores
 
 export const CURRENCY_SYBMOL = readable('៛');
+export const NETWORK_ID = readable(100)
+export const TOKEN_ADDRESS = '0x5eb7e67ec2ce404ebabafed0a79bab10d030c58a'
+
 
 // set default state
 
 export const wallet = writable(
-    {
-        qr: null,
-        ethBalance: Number(-1), // or xDAI
-        tokenContract: null,
-        tokenBalance: 0,
-        address: '0x0000000000000000000000000000000000000000',
-        burner: {
-          signingKey: {
-            privateKey: '0x0000000000000000000000000000000000000000'
-          }
-        },
-        nextTx: {
-          beforeParams: `You're sending`,
-          price: -1,
-          joiningStatement: '',
-          param: '',
-          afterParams: ``,
-          cta: `Swipe to confirm`
-        },
-        afterConfirm: () => {},
-        afterSend: () => {}, // allow specification of a callback after send
-        refreshFuncs: [] // allow addition of functions which "refresh" the app
+  {
+    qr: null,
+    ethBalance: Number(-1), // or xDAI
+    tokenContract: null,
+    tokenBalance: 0,
+    address: '0x0000000000000000000000000000000000000000',
+    burner: {
+      signingKey: {
+        privateKey: '0x0000000000000000000000000000000000000000'
       }
+    },
+    nextTx: {
+      beforeParams: `You're sending`,
+      price: -1,
+      joiningStatement: '',
+      param: '',
+      afterParams: ``,
+      cta: `Swipe to confirm`
+    },
+    afterConfirm: () => {},
+    afterSend: () => {}, // allow specification of a callback after send
+    refreshFuncs: [] // allow addition of functions which "refresh" the app
+  }
 )
 
-// custom setStore function
+// store helper functions
 
 export function changeStore(variable, newVal){
     const unsubscribe = wallet.subscribe(walletObj => {
@@ -59,36 +62,13 @@ export function changeStore(variable, newVal){
     });
 }
 
-export function subscribeToWallet(store, variable){
+export function getValue(store, variable){
   let objectTree;
   if (variable){
     objectTree = variable.split('.');
   }
 
-  // console.log('tree', objectTree)
-
-  // console.log('val', store.burner.signingKey.address);
-
-  // if (objectTree.length === 1) {
-  //   x=store[objectTree[0].valueOf()]
-  // }
-  // else if (objectTree.length > 1) {
-
-  //   const first = objectTree.shift()
-  //   console.log('shift', first)
-
-  //   x=store[first].valueOf()
-
-  //   subscribeToWallet(x, objectTree)
-  // }
-  // else {
-  //   x = store;
-  // }
-
-  // return x;
-
   let x = store;
-
   objectTree.forEach(i => {
     x=x[i.valueOf()]
   })
@@ -99,7 +79,7 @@ export function subscribeToWallet(store, variable){
 // -------------------------
 
 
-export async function walletStore() {
+export async function walletInit() {
     
     // creates a wallet if there is not already one in localstorage    
     let providerStore, walletStore
@@ -114,9 +94,9 @@ export async function walletStore() {
 
     changeStore('burner', getWallet(providerStore))
     
-    console.log('blah', subscribeToWallet(walletStore, 'burner.signingKey.address'))
+    // console.log('blah', getValue(walletStore, 'burner.signingKey.address'))
   
-    changeStore('address', subscribeToWallet(walletStore, 'burner.signingKey.address'))
+    changeStore('address', getValue(walletStore, 'burner.signingKey.address'))
   
     // this is where you would stick some code that filled the user's wallet with
     // xDAI or whatever, if you were going to do it that way
@@ -130,17 +110,17 @@ export async function walletStore() {
     // }
   
     // grab a contract instance attached to our burner wallet
-    wallet.tokenContract = getTokenContract(
-      state.TOKEN_ADDRESS,
+    changeStore('tokenContract', getTokenContract(
+      TOKEN_ADDRESS,
       abi,
-      state.provider,
-      wallet.burner
-    )
+      providerStore,
+      getValue(walletStore, 'burner')
+    ))
   
-    // // set up an event listener and notifications for the transfer function
-    // setupTransferNotifications(wallet, state)
+    // set up an event listener and notifications for the transfer function
+    // setupTransferNotifications(walletStore, state)
   
-    // setTokenBalance()
+    setTokenBalance()
   
     // // a whole bunch of events for you to configure the 'confirm' screen in the
     // // wallet. YOU DON'T HAVE TO USE THE CONFIRM SCREEN, this is just a handy
@@ -183,18 +163,22 @@ export async function walletStore() {
     //   wallet.refreshFuncs.push(f)
     // })
   
-    // // function which gets the balance of the user in a token then renders an update
-    // async function setTokenBalance() {
-    //   try {
-    //     wallet.tokenBalance = await getTokenBalance(
-    //       wallet.tokenContract,
-    //       wallet.address
-    //     )
-    //     emitter.emit('render')
-    //   } catch (e) {
-    //     console.log(e)
-    //   }
-    // }
+    // function which gets the balance of the user in a token then renders an update
+    async function setTokenBalance() {
+      try {
+        changeStore('tokenBalance', await getTokenBalance(
+          getValue(walletStore, 'tokenContract'),
+          getValue(walletStore, 'address')
+        ))
+        // wallet.tokenBalance = await getTokenBalance(
+        //   wallet.tokenContract,
+        //   wallet.address
+        // )
+        // // emitter.emit('render')
+      } catch (e) {
+        console.log(e)
+      }
+    }
   
     // // sends a token transaction (currently hardcoded to a single wallet token)
     // // uses the standard token tx messages unless you pass in something as messages
@@ -229,17 +213,17 @@ export async function walletStore() {
     //   }
     // }
   
-    // async function getEthbalance() {
-    //   wallet.ethBalance = ethers.utils.formatEther(
-    //     await state.provider.getBalance(wallet.address)
-    //   )
-    // }
+    async function getEthbalance() {
+      walletStore.ethBalance = ethers.utils.formatEther(
+        await providerStore.getBalance(wallet.address)
+      )
+    }
   
-    // function getTokenContract(address, abi, provider, burner) {
-    //   const c = new ethers.Contract(address, abi, provider)
-    //   // connect our burner account with the contract so we can send txs
-    //   return c.connect(burner)
-    // }
+    function getTokenContract(address, abi, provider, burner) {
+      const c = new ethers.Contract(address, abi, provider)
+      // connect our burner account with the contract so we can send txs
+      return c.connect(burner)
+    }
   
     // function setupTransferNotifications(
     //   { tokenContract, address, refresh },
@@ -260,15 +244,15 @@ export async function walletStore() {
     //   })
     // }
   
-    // // gets the balance of a given user on a given token contract
-    // async function getTokenBalance(contract, address) {
-    //   try {
-    //     const b = await contract.balanceOf(address)
-    //     return b.toNumber()
-    //   } catch (e) {
-    //     return -1
-    //   }
-    // }
+    // gets the balance of a given user on a given token contract
+    async function getTokenBalance(contract, address) {
+      try {
+        const b = await contract.balanceOf(address)
+        return b.toNumber()
+      } catch (e) {
+        return -1
+      }
+    }
   
     // gets the burner wallet from localstorage or else creates a new one
     function getWallet(provider) {
