@@ -23,7 +23,7 @@
     "svelte-loader": "^2.13.4",
     "tone": "^13.4.9",
     "webpack": "^4.32.2",
-    "yarn": "^1.17.3"
+    "yarn": "^1.22.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
